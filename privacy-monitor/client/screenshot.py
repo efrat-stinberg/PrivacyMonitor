@@ -1,14 +1,14 @@
 """
 Screenshot Capture Module
-Handles physical screenshot capture of alxxxxxxxcted monitors.
+Handles physical screenshot capture of all connected monitors.
 """
 
 import io
+import os
 import logging
-from typing import TypedDict
+from typing import TypedDict, List
 
 import mss
-import mss.tools
 from PIL import Image
 
 from config import JPEG_QUALITY
@@ -33,31 +33,28 @@ class ScreenshotCapture:
     Uses mss library for fast, cross-platform screenshot capture.
     """
 
-    def capture_all_screens(self) -> list[ScreenshotInfo]:
+    def capture_all_screens(self, save_folder: str = ".") -> List[ScreenshotInfo]:
         """
-        Capture screenshots of all connected physical monitors.
+        Capture screenshots of all connected physical monitors and save them immediately.
+        
+        Args:
+            save_folder: folder to save screenshots (default is current folder)
         
         Returns:
-            List of dictionaries containing image data and monitor information.
-            Each dict contains: image (PIL.Image), monitor_number, width, height, left, top
+            List of ScreenshotInfo dictionaries.
         """
-        screenshots: list[ScreenshotInfo] = []
-        
+        screenshots: List[ScreenshotInfo] = []
+        os.makedirs(save_folder, exist_ok=True)
+
         try:
             with mss.mss() as sct:
-                # sct.monitors[0] is the "all monitors" virtual screen
-                # sct.monitors[1:] are the individual physical monitors
                 physical_monitors = sct.monitors[1:]
-                
                 logger.debug(f"Detected {len(physical_monitors)} physical monitor(s)")
-                
+
                 for monitor_number, monitor in enumerate(physical_monitors, start=1):
                     try:
-                        # Capture the monitor
                         screenshot = sct.grab(monitor)
-                        
-                        # Convert to PIL Image
-                        # mss returns BGRA, we need to convert to RGB
+
                         image = Image.frombytes(
                             "RGB",
                             screenshot.size,
@@ -65,7 +62,11 @@ class ScreenshotCapture:
                             "raw",
                             "BGRX"
                         )
-                        
+
+                        filename = os.path.join(save_folder, f"monitor_{monitor_number}.jpg")
+                        image.save(filename, format="JPEG", quality=JPEG_QUALITY)
+                        logger.info(f"Saved screenshot to {filename}")
+
                         screenshot_info: ScreenshotInfo = {
                             "image": image,
                             "monitor_number": monitor_number,
@@ -74,49 +75,19 @@ class ScreenshotCapture:
                             "left": monitor["left"],
                             "top": monitor["top"],
                         }
-                        
+
                         screenshots.append(screenshot_info)
-                        logger.debug(
-                            f"Captured monitor {monitor_number}: "
-                            f"{monitor['width']}x{monitor['height']} "
-                            f"at ({monitor['left']}, {monitor['top']})"
-                        )
-                        
+
                     except Exception as e:
-                        # Handle error for individual monitor, continue to next
-                        logger.error(
-                            f"Failed to capture monitor {monitor_number}: {e}"
-                        )
+                        logger.error(f"Failed to capture monitor {monitor_number}: {e}")
                         continue
-                        
+
         except Exception as e:
             logger.error(f"Failed to initialize screen capture: {e}")
-            
+
         return screenshots
 
-    @staticmethod
-    def image_to_bytes(image: Image.Image, quality: int = JPEG_QUALITY) -> bytes:
-        """
-        Convert PIL Image to JPEG bytes.
-        
-        Args:
-            image: PIL Image object to convert
-            quality: JPEG compression quality (0-100)
-            
-        Returns:
-            Image data as bytes in JPEG format
-        """
-        buffer = io.BytesIO()
-        
-        # Ensure image is in RGB mode (JPEG doesn't support alpha channel)
-        if image.mode in ("RGBA", "LA", "P"):
-            image = image.convert("RGB")
-            
-        image.save(
-            buffer,
-            format="JPEG",
-            quality=quality,
-            optimize=True
-        )
-        
-        return buffer.getvalue()
+
+if __name__ == "__main__":
+    sc = ScreenshotCapture()
+    sc.capture_all_screens()  # capture and save immediately in current folder
