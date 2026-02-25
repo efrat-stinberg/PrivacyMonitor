@@ -78,6 +78,9 @@ BROWSER_PROCESSES: list[str] = [
     "opera.exe",
     "iexplore.exe",
     "vivaldi.exe",
+    "arc.exe",
+    "waterfox.exe",
+    "seamonkey.exe",
     # Linux/Mac (process names without extension)
     "chrome",
     "firefox",
@@ -88,6 +91,14 @@ BROWSER_PROCESSES: list[str] = [
     "chromium-browser",
     "google-chrome",
     "microsoft-edge",
+]
+
+# Window titles to skip (case-insensitive substring match)
+SKIP_WINDOW_TITLES: list[str] = [
+    "gmail",
+    "bank",
+    "דואר",
+    "בנק"
 ]
 
 # =============================================================================

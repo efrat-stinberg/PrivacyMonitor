@@ -21,7 +21,8 @@ from config import JPEG_QUALITY, SENSITIVE_KEYWORDS
 logger = logging.getLogger(__name__)
 
 # Initialize EasyOCR reader once (heavy operation)
-reader = easyocr.Reader(['en', 'he'])
+
+reader = easyocr.Reader(['en']) 
 
 # Thread pool for asynchronous OCR
 ocr_executor = ThreadPoolExecutor(max_workers=2)  # adjust workers as needed
