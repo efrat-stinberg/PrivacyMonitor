@@ -1,0 +1,28 @@
+# Privacy Monitor Client Dependencies
+
+# Task scheduling
+APScheduler==3.10.4
+
+# Screenshot capture (fast, cross-platform)
+mss==9.0.1
+
+# Image processing
+Pillow==10.1.0
+
+# OCR wrapper for Tesseract
+pytesseract==0.3.10
+
+# Image processing (Gaussian blur)
+opencv-python==4.8.1.78
+
+# System process information
+psutil==5.9.6
+
+# HTTP client
+requests==2.31.0
+
+# Environment variable management
+python-dotenv==1.0.0
+
+# Array manipulation (required by opencv)
+numpy>=1.24.0
